@@ -1,2 +1,0 @@
-"C:/Program Files/LLVM/bin/llvm-ar.exe" qc ../../../lib/gmock.lib "CMakeFiles/gmock.dir/src/gmock-all.cc.obj"
-"C:/Program Files/LLVM/bin/llvm-ranlib.exe" ../../../lib/gmock.lib

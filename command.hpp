@@ -64,10 +64,10 @@ public:
     }
 };
 
-class Drop: public Command {
+class Dot: public Command {
 public:
     void apply(DataStack & stack) override {
-        std::cout << stack.extract();
+        std::cout << stack.extract() << " ";
     }
 };
 
@@ -80,5 +80,41 @@ public:
     }
 };
 
+class Rot: public Command {
+public:
+    void apply(DataStack & stack) override {
+        auto first = stack.extract();
+        auto second = stack.extract();
+        auto third = stack.extract();
+        stack.push(first);
+        stack.push(third);
+        stack.push(second);
+    }
+};
 
+class Over: public Command {
+public:
+    void apply(DataStack & stack) override {
+        auto first = stack.extract();
+        auto second = stack.extract();
+        stack.push(second);
+        stack.push(first);
+        stack.push(second);
+    }
+};
+
+class Emit: public Command {
+public:
+    void apply(DataStack & stack) override {
+        auto num = stack.extract();
+        std::cout << char(num);
+    }
+};
+
+class Cr: public Command {
+public:
+    void apply(DataStack & stack) override {
+        std::cout << std::endl;
+    }
+};
 

@@ -1,3 +1,0 @@
-C:/Users/soqet/Documents/coding/nsu/course2/oop/lab2/build/_deps/googletest-subbuild/CMakeFiles/googletest-populate.dir
-C:/Users/soqet/Documents/coding/nsu/course2/oop/lab2/build/_deps/googletest-subbuild/CMakeFiles/edit_cache.dir
-C:/Users/soqet/Documents/coding/nsu/course2/oop/lab2/build/_deps/googletest-subbuild/CMakeFiles/rebuild_cache.dir

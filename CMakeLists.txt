@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
-add_executable(lab2 interpreter_error.hpp interpreter.hpp main.cpp)
+add_executable(lab2 interpreter_error.hpp interpreter.hpp command.hpp command.cpp main.cpp)
 
 add_executable(lab2_test interpreter.hpp interpreter_error.hpp interpreter_test.cpp)
 
@@ -19,7 +19,7 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-SET(WARN_FLAGS "-Wall -Wpedantic -Werror")
+#SET(WARN_FLAGS "-Wall -Wpedantic -Werror")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARN_FLAGS} ${ASAN_OPTIONS}")
 
 enable_testing()
