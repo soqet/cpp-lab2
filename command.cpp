@@ -5,11 +5,11 @@
 #include <memory>
 
 namespace {
-
+    
     std::unique_ptr<Command> plusCreator(std::string::iterator & it, const std::string::iterator & end) {
         return std::make_unique<Plus>();
     }
-
+    
     bool addCmd = Interpreter::getInstance().registerCreator("+", plusCreator);
 
     std::unique_ptr<Command> minusCreator(std::string::iterator & it, const std::string::iterator & end) {
