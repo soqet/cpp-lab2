@@ -54,7 +54,7 @@ public:
                 ++it;
             }
             if (isNumber(cmdName)) {
-                this->stack.push(std::stoi(cmdName));
+                cmds.push_back(std::make_unique<Number>(std::stoi(cmdName)));
                 continue;
             }
             auto creator_it = this->creators.find(cmdName);

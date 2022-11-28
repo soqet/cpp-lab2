@@ -9,6 +9,16 @@ public:
     virtual ~Command() {}
 };
 
+class Number: public Command {
+public:
+    Number(int n): n(n) {}
+    void apply(DataStack & stack) override {
+        stack.push(n);
+    }
+private:
+    int n;
+};
+
 class Plus: public Command {
 public:
     void apply(DataStack & stack) override {
