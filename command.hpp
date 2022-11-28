@@ -117,3 +117,33 @@ public:
         std::cout << std::endl;
     }
 };
+
+class Greater: public Command {
+public:
+    void apply(DataStack & stack) override {
+        auto nums = stack.extractPair();
+        // if (nums.first > nums.second) {
+        //     stack.push(1);
+        // } else {
+        //     stack.push(0);
+        // }
+        stack.push(nums.first > nums.second);
+    }
+};
+
+class Less: public Command {
+public:
+    void apply(DataStack & stack) override {
+        auto nums = stack.extractPair();
+        stack.push(nums.first < nums.second);
+    }
+};
+
+
+class Equal: public Command {
+public:
+    void apply(DataStack & stack) override {
+        auto nums = stack.extractPair();
+        stack.push(nums.first == nums.second);
+    }
+};
