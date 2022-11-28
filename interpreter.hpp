@@ -36,6 +36,21 @@ public:
                 break;
             }
             std::string cmdName;
+            if (*(it++) == '-' && it != end && *it != ' ' && *it != '\n') {
+                while(it != end && *it != ' ' && *it != '\n') {
+                    cmdName += *it;
+                    ++it;
+                }
+                if (!isNumber(cmdName)) {
+                    std::stringstream ss; 
+                    ss << "No such command: '" << '-' << cmdName << "'";
+                    throw InterpreterError(ss.str());
+                } else {
+                    cmds.push_back(std::make_unique<Number>(-1 * std::stoi(cmdName)));
+                }
+                continue;
+            }
+            --it;
             if (*(it++) == '.' && it != end && *it == '"') {
                 ++it;
                 while(it != end && *it != '"' && *it != '\n') {
@@ -45,7 +60,6 @@ public:
                 if (it == end || *(it++) != '"' || (it != end && *it != ' ' && *it != '\n')) {
                     throw InterpreterError("Wrong string syntax");
                 }
-                // std::cout << cmdName.substr(0, cmdName.length());
                 cmds.push_back(std::make_unique<String>(cmdName.substr(0, cmdName.length())));
                 continue;
             }
