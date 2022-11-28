@@ -45,7 +45,8 @@ public:
                 if (it == end || *(it++) != '"' || (it != end && *it != ' ' && *it != '\n')) {
                     throw InterpreterError("Wrong string syntax");
                 }
-                std::cout << cmdName.substr(0, cmdName.length());
+                // std::cout << cmdName.substr(0, cmdName.length());
+                cmds.push_back(std::make_unique<String>(cmdName.substr(0, cmdName.length())));
                 continue;
             }
             --it;

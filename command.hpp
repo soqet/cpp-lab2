@@ -19,6 +19,16 @@ private:
     int n;
 };
 
+class String: public Command {
+public:
+    String(const std::string s): s(s) {}
+    void apply(DataStack & stack) override {
+        std::cout << s;
+    }
+private:
+    const std::string s;
+};
+
 class Plus: public Command {
 public:
     void apply(DataStack & stack) override {
