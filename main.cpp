@@ -5,6 +5,7 @@ int main() {
     auto itpt = Interpreter::getInstance();
     std::string cmds;
     std::cout << ">> ";
+    std::stringstream out;
     while (std::getline(std::cin, cmds)) {
         itpt.interpret(cmds.begin(), cmds.end());
         std::cout << std::endl << ">> ";

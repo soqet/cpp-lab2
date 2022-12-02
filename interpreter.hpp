@@ -7,6 +7,8 @@
 #include <sstream>
 #include <iostream>
 #include <iterator>
+#include <memory>
+#include <list>
 
 #include "command.hpp"
 #include "data_stack.hpp"
@@ -36,34 +38,6 @@ public:
                 break;
             }
             std::string cmdName;
-            if (*(it++) == '-' && it != end && *it != ' ' && *it != '\n') {
-                while(it != end && *it != ' ' && *it != '\n') {
-                    cmdName += *it;
-                    ++it;
-                }
-                if (!isNumber(cmdName)) {
-                    std::stringstream ss; 
-                    ss << "No such command: '" << '-' << cmdName << "'";
-                    throw InterpreterError(ss.str());
-                } else {
-                    cmds.push_back(std::make_unique<Number>(-1 * std::stoi(cmdName)));
-                }
-                continue;
-            }
-            --it;
-            if (*(it++) == '.' && it != end && *it == '"') {
-                ++it;
-                while(it != end && *it != '"' && *it != '\n') {
-                    cmdName += *it;
-                    ++it;
-                }
-                if (it == end || *(it++) != '"' || (it != end && *it != ' ' && *it != '\n')) {
-                    throw InterpreterError("Wrong string syntax");
-                }
-                cmds.push_back(std::make_unique<String>(cmdName.substr(0, cmdName.length())));
-                continue;
-            }
-            --it;
             while(it != end && *it != ' ' && *it != '\n') {
                 cmdName += *it;
                 ++it;
@@ -84,15 +58,16 @@ public:
         return cmds;
     }
 
-    void interpret(const std::string::iterator & begin, const std::string::iterator & end) {
+    void interpret(const std::string::iterator & begin, const std::string::iterator & end, 
+    std::ostream & out = std::cout, std::ostream & err = std::cerr) {
         auto it = begin;
         try {
             auto cmds = this->getCmds(it, end);
-            for (auto it = cmds.begin(); it != cmds.end(); ++it) {
-                (*it)->apply(this->stack);
+            for (auto cmdIt = cmds.begin(); cmdIt != cmds.end(); ++cmdIt) {
+                out << (*cmdIt)->apply(this->stack);
             }
         } catch (InterpreterError & e) {
-            std::cerr << e.what();
+            err << e.what();
         }
     }
 
@@ -100,10 +75,13 @@ private:
 
     bool isNumber(const std::string & s) {
         std::string::const_iterator it = s.begin();
+        if (*it == '-') {
+            ++it;
+        }
         while (it != s.end() && std::isdigit(*it)) {
             ++it;
         }
-        return !s.empty() && it == s.end();
+        return !s.empty() && it == s.end() && *(--it) != '-';
     }
 
     Interpreter() = default;
