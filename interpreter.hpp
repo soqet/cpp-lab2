@@ -14,8 +14,10 @@
 #include "data_stack.hpp"
 #include "interpreter_error.hpp"
 
+// CR: move to cpp
 class Interpreter {
 public:
+    // CR: remove creators, just use std::unique_ptr<Command>
     typedef std::function<std::unique_ptr<Command> (std::string::iterator &, const std::string::iterator &)> creator_t;
 
     static Interpreter & getInstance() {
@@ -38,6 +40,7 @@ public:
                 break;
             }
             std::string cmdName;
+            // CR: find_if
             while(it != end && *it != ' ' && *it != '\n') {
                 cmdName += *it;
                 ++it;
@@ -64,6 +67,7 @@ public:
         try {
             auto cmds = this->getCmds(it, end);
             for (auto cmdIt = cmds.begin(); cmdIt != cmds.end(); ++cmdIt) {
+                // CR: print 'ok' if nothing was printed by commands
                 out << (*cmdIt)->apply(this->stack);
             }
         } catch (InterpreterError & e) {
@@ -78,6 +82,7 @@ private:
         if (*it == '-') {
             ++it;
         }
+        // CR: std::all_of
         while (it != s.end() && std::isdigit(*it)) {
             ++it;
         }

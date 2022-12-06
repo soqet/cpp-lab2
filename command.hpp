@@ -6,11 +6,12 @@
 class Command {
 public:
     virtual std::string apply(DataStack & stack) = 0;
-    virtual ~Command() {}
+    virtual ~Command() = default;
 };
 
 class Number: public Command {
 public:
+    // CR: explicit
     Number(int n): n(n) {}
     
     std::string apply(DataStack & stack) override {
@@ -32,6 +33,8 @@ private:
     const std::string s;
 };
 
+// CR: add base class for binary operations
+// CR: Plus: public BinaryOp
 class Plus: public Command {
 public:
     std::string apply(DataStack & stack) override {
@@ -113,6 +116,7 @@ public:
         auto nums = stack.extractPair();
         stack.push(nums.second);
         stack.push(nums.first);
+        // CR: do not create empty strings, add additional parameter to apply which will be used as place where to print
         return "";
     }
 };

@@ -6,6 +6,7 @@
 
 namespace {
 
+    // CR: move to interpreter
     std::unique_ptr<Command> stringCreator(std::string::iterator & it, const std::string::iterator & end) {
         ++it;
         std::string str;

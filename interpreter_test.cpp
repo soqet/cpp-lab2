@@ -80,6 +80,7 @@ TEST(Basic, Emit) {
     std::stringstream out;
     std::string cmds = "100 108 114 111 119 32 111 108 108 101 104 \n emit emit emit emit emit emit emit emit emit emit emit ";
     itpt.interpret(cmds.begin(), cmds.end(), out);
+    // CR: add space at the end?
     EXPECT_EQ(out.str(), "hello world");
 }
 
@@ -147,11 +148,19 @@ TEST(NoCommands, Endlines) {
 }
 
 TEST(NoCommands, SpacesAndEndlines) {
+//    test(" \n\n", "");
     std::stringstream out;
     std::string cmds = " \n\n ";
     itpt.interpret(cmds.begin(), cmds.end(), out);
     EXPECT_EQ(out.str(), "");
 }
+
+// CR:
+//void test(const std::string & cmds, const std::string & expected) {
+//    std::stringstream out;
+//    itpt.interpret(cmds.begin(), cmds.end(), out);
+//    EXPECT_EQ(expected, out.str());
+//}
 
 TEST(Strings, Basic) {
     std::stringstream out;
@@ -176,6 +185,8 @@ TEST(Strings, NoSpaceAfterQuote) {
     EXPECT_EQ(err.str(), "Wrong string syntax");
 }
 
+// CR: round-up / round down test
+// CR: stack does not have enough numbers
 TEST(Exceptions, DivByZero) {
     std::stringstream out;
     std::stringstream err;
