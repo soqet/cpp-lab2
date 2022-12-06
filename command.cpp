@@ -3,6 +3,29 @@
 #include "interpreter_error.hpp"
 
 #include <memory>
+//
+//Token getNextToken(std::string::iterator it) {
+//
+//}
+//
+//struct Token {
+//    TokenType type;
+//    std::string value;
+//};
+//
+//enum class TokenType {
+//    STRING,
+//    NUMBER,
+//    COMMAND;
+//};
+//
+//interpret() {
+//    Token token = getNextToken(it);
+//    TokenType type = token.type;
+//    switch (type) {
+//
+//    }
+//}
 
 namespace {
 
