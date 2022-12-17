@@ -18,49 +18,17 @@
 // CR: move to cpp
 class Interpreter {
 public:
-    // CR: remove creators, just use std::unique_ptr<Command>
-    typedef std::function<std::unique_ptr<Command> (std::string::iterator &, const std::string::iterator &)> creator_t;
-
     static Interpreter & getInstance() {
-        static Interpreter i;
+        static Interpreter i;   
         return i;
     }
 
-    bool registerCreator(std::string str, const creator_t & creator) {
-        this->creators[str] = creator;
+    bool registerCreator(std::string str, std::shared_ptr<Command> && cmd) {
+        this->creators[str] = cmd; // move
         return true;
     }
 
-    std::list<std::unique_ptr<Command>> getCmds(const std::string::iterator & begin, const std::string::iterator & end) {
-        std::list<std::unique_ptr<Command>> cmds;
-        for (auto it = begin; it < end;) {
-            auto token = getToken(it, end);
-            switch (token.type) {
-                case Token::TokenType::NUMBER :
-                    cmds.push_back(std::make_unique<Number>(std::stoi(token.str)));
-                    break;
-                case Token::TokenType::STRING :
-                    cmds.push_back(std::make_unique<String>(token.str));
-                    break;
-                case Token::TokenType::COMMAND : {
-                    auto creator_it = this->creators.find(token.str);
-                    if (creator_it == this->creators.end()) {
-                        std::stringstream ss; 
-                        ss << "No such command: '" << token.str << "'";
-                        throw InterpreterError(ss.str());
-                    }
-                    creator_t creator = (*creator_it).second;
-                    cmds.push_back(creator(it, end));
-                    break;
-                }
-                case Token::TokenType::EMPTY :
-                    return cmds;
-            }
-        }
-        return cmds;
-    }
-
-    void interpret(const std::string::iterator & begin, const std::string::iterator & end, 
+    void interpret(const std::string::const_iterator & begin, const std::string::const_iterator & end, 
     std::ostream & out = std::cout, std::ostream & err = std::cerr) {
         auto it = begin;
         std::stringstream output;
@@ -82,6 +50,34 @@ public:
     }
 
 private:
+    std::list<std::shared_ptr<Command>> getCmds(const std::string::const_iterator & begin, const std::string::const_iterator & end) {
+        std::list<std::shared_ptr<Command>> cmds;
+        for (auto it = begin; it < end;) {
+            auto token = getToken(it, end);
+            switch (token.type) {
+                case Token::TokenType::NUMBER :
+                    cmds.push_back(std::make_unique<Number>(std::stoi(token.str)));
+                    break;
+                case Token::TokenType::STRING :
+                    cmds.push_back(std::make_unique<String>(token.str));
+                    break;
+                case Token::TokenType::COMMAND : {
+                    auto cmd_it = this->creators.find(token.str);
+                    if (cmd_it == this->creators.end()) {
+                        std::stringstream ss; 
+                        ss << "No such command: '" << token.str << "'";
+                        throw InterpreterError(ss.str());
+                    }
+                    auto cmd = (*cmd_it).second;
+                    cmds.push_back(cmd);
+                    break;
+                }
+                case Token::TokenType::EMPTY :
+                    return cmds;
+            }
+        }
+        return cmds;
+    }
 
     struct Token {
         enum class TokenType {
@@ -94,7 +90,7 @@ private:
         TokenType type;
     };
 
-    Token getToken(std::string::iterator & it, const std::string::iterator & end) {
+    Token getToken(std::string::const_iterator & it, const std::string::const_iterator & end) {
         Token token;
         while(it != end && (*it == ' ' || *it == '\n')) {
             ++it;
@@ -145,7 +141,7 @@ private:
 
     Interpreter & operator=(const Interpreter & other) = delete;
 
-    std::unordered_map<std::string, creator_t> creators;
+    std::unordered_map<std::string, std::shared_ptr<Command>> creators;
 
     DataStack stack;
 };

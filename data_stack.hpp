@@ -12,7 +12,6 @@ class DataStack {
             stack.push(number);
         }
 
-        // CR: extract -> pop
         int pop() {
             if (stack.size() < 1) {
                 throw InterpreterError("Stack is empty");

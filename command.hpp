@@ -154,7 +154,7 @@ class Emit: public Command {
 public:
     void apply(Context & ctx) override {
         auto num = ctx.stack.pop();
-        ctx.output << std::string({char(num)});
+        ctx.output << std::string({char(num)}); 
     }
 };
 
