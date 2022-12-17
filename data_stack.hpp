@@ -13,7 +13,7 @@ class DataStack {
         }
 
         // CR: extract -> pop
-        int extract() {
+        int pop() {
             if (stack.size() < 1) {
                 throw InterpreterError("Stack is empty");
             }
@@ -22,18 +22,10 @@ class DataStack {
             return res;
         }
 
-        // CR: remove method
-        std::pair<int, int> extractPair() {
-            if (stack.size() < 2) {
-                throw InterpreterError("Not enough numbers on stack");
-            }
-            std::pair<int, int> res;
-            res.second = this->extract();
-            res.first = this->extract();
-            return res;
-        }
-
         int top() {
+            if (stack.size() < 1) {
+                throw InterpreterError("Stack is empty");
+            }
             return stack.top();
         }
 

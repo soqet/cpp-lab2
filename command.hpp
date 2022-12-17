@@ -2,21 +2,37 @@
 
 #include "data_stack.hpp"
 #include "iostream"
+#include <sstream>
+#include <string>
+
+struct Context {
+    Context(DataStack & stack, std::stringstream & output) : stack(stack), output(output) {}
+    DataStack & stack;
+    std::stringstream & output;
+};
 
 class Command {
 public:
-    virtual std::string apply(DataStack & stack) = 0;
+    virtual void apply(Context & ctx) = 0;
     virtual ~Command() = default;
+};
+
+class BinCommand : public Command {
+protected:
+    std::pair<int, int> extractPair(DataStack & stack) {
+        std::pair<int, int> res;
+        res.second = stack.pop();
+        res.first = stack.pop();
+        return res;
+    }
 };
 
 class Number: public Command {
 public:
-    // CR: explicit
-    Number(int n): n(n) {}
+    explicit Number(int n) : n(n) {}
     
-    std::string apply(DataStack & stack) override {
-        stack.push(n);
-        return "";
+    void apply(Context & ctx) override {
+        ctx.stack.push(n);
     }
 private:
     int n;
@@ -26,165 +42,150 @@ class String: public Command {
 public:
     String(std::string s): s(s) {}
 
-    std::string apply(DataStack &) override {
-        return s;
+    void apply(Context & ctx) override {
+        ctx.output << s;
     }
 private:
     const std::string s;
 };
 
-// CR: add base class for binary operations
-// CR: Plus: public BinaryOp
-class Plus: public Command {
+
+class Plus: public BinCommand {
 public:
-    std::string apply(DataStack & stack) override {
-        auto nums = stack.extractPair();
-        stack.push(nums.first + nums.second);
-        return "";
+    void apply(Context & ctx) override {
+        auto nums = extractPair(ctx.stack);
+        ctx.stack.push(nums.first + nums.second);
     }
 };
 
-class Minus: public Command {
+class Minus: public BinCommand {
 public:
-    std::string apply(DataStack & stack) override {
-        auto nums = stack.extractPair();
-        stack.push(nums.first - nums.second);
-        return "";
+    void apply(Context & ctx) override {
+        auto nums = extractPair(ctx.stack);
+        ctx.stack.push(nums.first - nums.second);
     }
 };
 
-class Mult: public Command {
+class Mult: public BinCommand {
 public:
-    std::string apply(DataStack & stack) override {
-        auto nums = stack.extractPair();
-        stack.push(nums.first * nums.second);
-        return "";
+    void apply(Context & ctx) override {
+        auto nums = extractPair(ctx.stack);
+        ctx.stack.push(nums.first * nums.second);
     }
 };
 
-class Div: public Command {
+class Div: public BinCommand {
 public:
-    std::string apply(DataStack & stack) override {
-        auto nums = stack.extractPair();
+    void apply(Context & ctx) override {
+        auto nums = extractPair(ctx.stack);
         if (nums.second == 0) {
             throw InterpreterError("Division by zero");
         }
-        stack.push(nums.first / nums.second);
-        return "";
+        ctx.stack.push(nums.first / nums.second);
     }
 };
 
-class Mod: public Command {
+class Mod: public BinCommand {
 public:
-    std::string apply(DataStack & stack) override {
-        auto nums = stack.extractPair();
+    void apply(Context & ctx) override {
+        auto nums = extractPair(ctx.stack);
         if (nums.second == 0) {
             throw InterpreterError("Division by zero");
         }
-        stack.push(nums.first % nums.second);
-        return "";
+        ctx.stack.push(nums.first % nums.second);
     }
 };
 
 class Dup: public Command {
 public:
-    std::string apply(DataStack & stack) override {
-        auto top = stack.top();
-        stack.push(top);
-        return "";
+    void apply(Context & ctx) override {
+        auto top = ctx.stack.top();
+        ctx.stack.push(top);
     }
 };
 
 class Drop: public Command {
 public:
-    std::string apply(DataStack & stack) override {
-        stack.extract();
-        return "";
+    void apply(Context & ctx) override {
+        ctx.stack.pop();
     }
 };
 
 class Dot: public Command {
 public:
-    std::string apply(DataStack & stack) override {
-        return std::to_string(stack.extract()) + " ";
+    void apply(Context & ctx) override {
+        ctx.output << std::to_string(ctx.stack.pop()) << " ";
     }
 };
 
-class Swap: public Command {
+class Swap: public BinCommand {
 public:
-    std::string apply(DataStack & stack) override {
-        auto nums = stack.extractPair();
-        stack.push(nums.second);
-        stack.push(nums.first);
-        // CR: do not create empty strings, add additional parameter to apply which will be used as place where to print
-        return "";
+    void apply(Context & ctx) override {
+        auto nums = extractPair(ctx.stack);
+        ctx.stack.push(nums.second);
+        ctx.stack.push(nums.first);
     }
 };
 
 class Rot: public Command {
 public:
-    std::string apply(DataStack & stack) override {
-        auto first = stack.extract();
-        auto second = stack.extract();
-        auto third = stack.extract();
-        stack.push(first);
-        stack.push(third);
-        stack.push(second);
-        return "";
+    void apply(Context & ctx) override {
+        auto first = ctx.stack.pop();
+        auto second = ctx.stack.pop();
+        auto third = ctx.stack.pop();
+        ctx.stack.push(first);
+        ctx.stack.push(third);
+        ctx.stack.push(second);
     }
 };
 
 class Over: public Command {
 public:
-    std::string apply(DataStack & stack) override {
-        auto first = stack.extract();
-        auto second = stack.extract();
-        stack.push(second);
-        stack.push(first);
-        stack.push(second);
-        return "";
+    void apply(Context & ctx) override {
+        auto first = ctx.stack.pop();
+        auto second = ctx.stack.pop();
+        ctx.stack.push(second);
+        ctx.stack.push(first);
+        ctx.stack.push(second);
     }
 };
 
 class Emit: public Command {
 public:
-    std::string apply(DataStack & stack) override {
-        auto num = stack.extract();
-        return {char(num)};
+    void apply(Context & ctx) override {
+        auto num = ctx.stack.pop();
+        ctx.output << std::string({char(num)});
     }
 };
 
 class Cr: public Command {
 public:
-    std::string apply(DataStack &) override {
-        return "\n";
+    void apply(Context & ctx) override {
+        ctx.output << std::endl;
     }
 };
 
-class Greater: public Command {
+class Greater: public BinCommand {
 public:
-    std::string apply(DataStack & stack) override {
-        auto nums = stack.extractPair();
-        stack.push(nums.first > nums.second);
-        return "";
+    void apply(Context & ctx) override {
+        auto nums = extractPair(ctx.stack);
+        ctx.stack.push(nums.first > nums.second);
     }
 };
 
-class Less: public Command {
+class Less: public BinCommand {
 public:
-    std::string apply(DataStack & stack) override {
-        auto nums = stack.extractPair();
-        stack.push(nums.first < nums.second);
-        return "";
+    void apply(Context & ctx) override {
+        auto nums = extractPair(ctx.stack);
+        ctx.stack.push(nums.first < nums.second);
     }
 };
 
 
-class Equal: public Command {
+class Equal: public BinCommand {
 public:
-    std::string apply(DataStack & stack) override {
-        auto nums = stack.extractPair();
-        stack.push(nums.first == nums.second);
-        return "";
+    void apply(Context & ctx) override {
+        auto nums = extractPair(ctx.stack);
+        ctx.stack.push(nums.first == nums.second);
     }
 };

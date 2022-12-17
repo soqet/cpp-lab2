@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <unordered_map>
 #include <string>
@@ -33,30 +34,28 @@ public:
     std::list<std::unique_ptr<Command>> getCmds(const std::string::iterator & begin, const std::string::iterator & end) {
         std::list<std::unique_ptr<Command>> cmds;
         for (auto it = begin; it < end;) {
-            while(it != end && (*it == ' ' || *it == '\n')) {
-                ++it;
+            auto token = getToken(it, end);
+            switch (token.type) {
+                case Token::TokenType::NUMBER :
+                    cmds.push_back(std::make_unique<Number>(std::stoi(token.str)));
+                    break;
+                case Token::TokenType::STRING :
+                    cmds.push_back(std::make_unique<String>(token.str));
+                    break;
+                case Token::TokenType::COMMAND : {
+                    auto creator_it = this->creators.find(token.str);
+                    if (creator_it == this->creators.end()) {
+                        std::stringstream ss; 
+                        ss << "No such command: '" << token.str << "'";
+                        throw InterpreterError(ss.str());
+                    }
+                    creator_t creator = (*creator_it).second;
+                    cmds.push_back(creator(it, end));
+                    break;
+                }
+                case Token::TokenType::EMPTY :
+                    return cmds;
             }
-            if (it == end) {
-                break;
-            }
-            std::string cmdName;
-            // CR: find_if
-            while(it != end && *it != ' ' && *it != '\n') {
-                cmdName += *it;
-                ++it;
-            }
-            if (isNumber(cmdName)) {
-                cmds.push_back(std::make_unique<Number>(std::stoi(cmdName)));
-                continue;
-            }
-            auto creator_it = this->creators.find(cmdName);
-            if (creator_it == this->creators.end()) {
-                std::stringstream ss; 
-                ss << "No such command: '" << cmdName << "'";
-                throw InterpreterError(ss.str());
-            }
-            creator_t creator = (*creator_it).second;
-            cmds.push_back(creator(it, end)); 
         }
         return cmds;
     }
@@ -64,11 +63,18 @@ public:
     void interpret(const std::string::iterator & begin, const std::string::iterator & end, 
     std::ostream & out = std::cout, std::ostream & err = std::cerr) {
         auto it = begin;
+        std::stringstream output;
+        Context ctx(stack, output);
         try {
             auto cmds = this->getCmds(it, end);
             for (auto cmdIt = cmds.begin(); cmdIt != cmds.end(); ++cmdIt) {
-                // CR: print 'ok' if nothing was printed by commands
-                out << (*cmdIt)->apply(this->stack);
+                (*cmdIt)->apply(ctx);
+            }
+            auto str = ctx.output.str();
+            if (str == "") {
+                out << "ok";
+            } else {
+                out << str;
             }
         } catch (InterpreterError & e) {
             err << e.what();
@@ -77,16 +83,62 @@ public:
 
 private:
 
+    struct Token {
+        enum class TokenType {
+            EMPTY,
+            COMMAND,
+            STRING,
+            NUMBER,
+        };
+        std::string str;
+        TokenType type;
+    };
+
+    Token getToken(std::string::iterator & it, const std::string::iterator & end) {
+        Token token;
+        while(it != end && (*it == ' ' || *it == '\n')) {
+            ++it;
+        }
+        if (it == end) {
+            token.type = Token::TokenType::EMPTY;
+            return token;
+        }
+        if (*(it++) == '.' && it != end && *it == '"') {
+            token.type = Token::TokenType::STRING;
+            ++it;
+            if (*it != ' ') {
+                throw InterpreterError("Wrong string syntax");
+            }
+            ++it;
+            while(it != end && *it != '"' && *it != '\n') {
+                token.str += *it;
+                ++it;
+            }
+            if (it == end || *(it++) != '"' || (it != end && *it != ' ' && *it != '\n')) {
+                throw InterpreterError("Wrong string syntax");
+            }
+            return token;
+        }
+        --it;
+        while(it != end && *it != ' ' && *it != '\n') {
+            token.str += *it;
+            ++it;
+        }
+        if (isNumber(token.str)) {
+            token.type = Token::TokenType::NUMBER;
+        } else {
+            token.type = Token::TokenType::COMMAND;
+        }
+        return token;
+    }
+
     bool isNumber(const std::string & s) {
-        std::string::const_iterator it = s.begin();
+        auto it = s.begin();
         if (*it == '-') {
             ++it;
         }
-        // CR: std::all_of
-        while (it != s.end() && std::isdigit(*it)) {
-            ++it;
-        }
-        return !s.empty() && it == s.end() && *(--it) != '-';
+        auto isDigits = std::all_of(it, s.end(), [](char c){ return std::isdigit(c); });
+        return !s.empty() && !(*s.begin() == '-' && s.length() == 1) && isDigits;
     }
 
     Interpreter() = default;

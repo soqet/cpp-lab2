@@ -116,35 +116,35 @@ TEST(NoCommands, EmptyString) {
     std::stringstream out;
     std::string cmds = "";
     itpt.interpret(cmds.begin(), cmds.end(), out);
-    EXPECT_EQ(out.str(), "");
+    EXPECT_EQ(out.str(), "ok");
 }
 
 TEST(NoCommands, Space) {
     std::stringstream out;
     std::string cmds = " ";
     itpt.interpret(cmds.begin(), cmds.end(), out);
-    EXPECT_EQ(out.str(), "");
+    EXPECT_EQ(out.str(), "ok");
 }
 
 TEST(NoCommands, Spaces) {
     std::stringstream out;
     std::string cmds = "    ";
     itpt.interpret(cmds.begin(), cmds.end(), out);
-    EXPECT_EQ(out.str(), "");
+    EXPECT_EQ(out.str(), "ok");
 }
 
 TEST(NoCommands, Endline) {
     std::stringstream out;
     std::string cmds = "\n";
     itpt.interpret(cmds.begin(), cmds.end(), out);
-    EXPECT_EQ(out.str(), "");
+    EXPECT_EQ(out.str(), "ok");
 }
 
 TEST(NoCommands, Endlines) {
     std::stringstream out;
     std::string cmds = "\n\n\n";
     itpt.interpret(cmds.begin(), cmds.end(), out);
-    EXPECT_EQ(out.str(), "");
+    EXPECT_EQ(out.str(), "ok");
 }
 
 TEST(NoCommands, SpacesAndEndlines) {
@@ -152,7 +152,7 @@ TEST(NoCommands, SpacesAndEndlines) {
     std::stringstream out;
     std::string cmds = " \n\n ";
     itpt.interpret(cmds.begin(), cmds.end(), out);
-    EXPECT_EQ(out.str(), "");
+    EXPECT_EQ(out.str(), "ok");
 }
 
 // CR:
@@ -187,6 +187,9 @@ TEST(Strings, NoSpaceAfterQuote) {
 
 // CR: round-up / round down test
 // CR: stack does not have enough numbers
+
+// add test for dup and empty stack
+
 TEST(Exceptions, DivByZero) {
     std::stringstream out;
     std::stringstream err;
