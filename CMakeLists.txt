@@ -5,9 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
-add_executable(lab2 command.cpp main.cpp)
+add_executable(lab2 interpreter.cpp command.cpp main.cpp)
 
-add_executable(lab2_test command.cpp interpreter_test.cpp)
+add_executable(lab2_test interpreter.cpp command.cpp interpreter_test.cpp)
 
 include(FetchContent)
 FetchContent_Declare(
